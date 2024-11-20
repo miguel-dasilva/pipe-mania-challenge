@@ -20,11 +20,12 @@ export default class Grid {
   placePipe(row, col, pipeType) {
     const x = col * TILE_SIZE + TILE_SIZE / 2;
     const y = row * TILE_SIZE + TILE_SIZE / 2;
-    this.scene.add.image(x, y, pipeType);  // You could pass 'pipe' or another type here)
+    const pipe = this.scene.add.image(x, y, pipeType); 
+    pipe.setDisplaySize(TILE_SIZE, TILE_SIZE); // TODO: MAYBE RESIZE THE ORIGINAL IMAGE PREEMPTIVELY
     this.grid[row][col] = pipeType;
   }
 
   isEmpty(row, col) {
-    return !this.grid[row][col];  // Check if the cell is empty
+    return !this.grid[row][col];
   }
 }
