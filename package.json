@@ -1,0 +1,26 @@
+{
+  "name": "pipe-mania-challenge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "phaser": "^3.87.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.13.0",
+    "parcel-reporter-static-files-copy": "^1.5.3",
+    "process": "^0.11.10"
+  },
+  "staticFiles": {
+    "staticPath": "public",
+    "staticOutDir": "."
+  }
+}
