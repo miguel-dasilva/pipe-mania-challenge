@@ -9,7 +9,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('pipe', 'assets/pipeGrey_01.png');
+    this.load.image('pipeCurved', 'assets/pipeGrey_01.png');
+    this.load.image('pipeStraight', 'assets/pipeGrey_03.png');
+    this.load.image('pipeCross', 'assets/pipeGrey_06.png');
+    this.load.image('pipeTee', 'assets/pipeGrey_05.png');
   }
 
   create() {
