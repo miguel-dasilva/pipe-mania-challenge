@@ -9,6 +9,8 @@ export default class Grid {
     this.blockedCells = [];
     this.startCell = null;
     this.minimumLength = this.generateMinimumLength();
+    this.waterIsFlowing = false;
+    this.gameEnded = false;
 
     this.initializeBlockedCells();
     this.setStartCell();
@@ -109,14 +111,17 @@ export default class Grid {
     console.log("Starting water flow");
     const startPiece = this.grid[this.startCell.row][this.startCell.col];
     if (startPiece) {
+      this.waterIsFlowing = true;
       this.flowWater(this.startCell.row, this.startCell.col, 'top');
     }
   }
 
   flowWater(row, col, incomingDirection) {
-    console.log("Flow water", row, col, incomingDirection);
+    if (this.gameEnded) return;
+
     const piece = this.grid[row][col];
     if (!piece || piece.isWet || !piece.canReceiveWaterFrom(incomingDirection)) {
+      console.log("fake game end")
       return;
     }
 
@@ -125,14 +130,68 @@ export default class Grid {
     piece.addWater(this.scene, x, y, 'water');
 
     const outputs = piece.getWaterOutputs(incomingDirection);
+
     setTimeout(() => {
+      let hasValidConnection = false;
       outputs.forEach(direction => {
         const nextCell = this.getNextCell(row, col, direction);
         if (nextCell) {
-          this.flowWater(nextCell.row, nextCell.col, this.getOppositeDirection(direction));
+          const nextPiece = this.grid[nextCell.row][nextCell.col];
+          if (nextPiece && !nextPiece.isWet &&
+              nextPiece.canReceiveWaterFrom(this.getOppositeDirection(direction))) {
+            hasValidConnection = true;
+            this.flowWater(nextCell.row, nextCell.col, this.getOppositeDirection(direction));
+          }
         }
       });
+
+      if (!hasValidConnection) {
+        console.log("true flow end");
+        this.checkWinCondition();
+      }
     }, 500);
+  }
+
+  checkWinCondition() {
+    if (this.gameEnded) return;
+    this.gameEnded = true;
+
+    const pathLength = this.calculatePathLength();
+    const isWin = pathLength >= this.minimumLength;
+
+    const gameOverText = this.scene.add.text(
+      this.offsetX + (GRID_COLS * TILE_SIZE) / 2,
+      GRID_ROWS * TILE_SIZE / 2,
+      isWin ? 
+        `You Win!\nPath Length: ${pathLength}` : 
+        `Game Over\nPath Length: ${pathLength}/${this.minimumLength}`,
+      {
+        fontSize: '32px',
+        fill: isWin ? '#00ff00' : '#ff0000',
+        backgroundColor: '#000000',
+        padding: { x: 20, y: 10 },
+        align: 'center'
+      }
+    ).setOrigin(0.5);
+  
+    // Add restart button
+    const restartButton = this.scene.add.text(
+      gameOverText.x,
+      gameOverText.y + 80,
+      'Restart',
+      {
+        fontSize: '24px',
+        fill: '#ffffff',
+        backgroundColor: '#444444',
+        padding: { x: 20, y: 10 }
+      }
+    )
+    .setOrigin(0.5)
+    .setInteractive();
+  
+    restartButton.on('pointerdown', () => {
+      this.scene.scene.restart();
+    });      
   }
 
   getNextCell(row, col, direction) {
@@ -153,5 +212,33 @@ export default class Grid {
     };
 
     return opposites[direction];
+  }
+
+  calculatePathLength() {
+    let maxLength = 0;
+    const visited = new Set();
+
+    const countPath = (row, col, currentLength = 0) => {
+      const key = `${row},${col}`;
+      if (visited.has(key) || !this.grid[row][col] || !this.grid[row][col].isWet) {
+        maxLength = Math.max(maxLength, currentLength);
+        return;
+      }
+
+      visited.add(key);
+      currentLength++;
+
+      ['top', 'bottom', 'left', 'right'].forEach(direction => {
+        const nextCell = this.getNextCell(row, col, direction);
+        if (nextCell) {
+          countPath(nextCell.row, nextCell.col, currentLength);
+        }
+      });
+
+      visited.delete(key);
+    }
+
+    countPath(this.startCell.row, this.startCell.col);
+    return maxLength;
   }
 }

@@ -11,11 +11,12 @@ export default class Piece {
   }
 
   canReceiveWaterFrom(direction) {
+    console.log(direction, " -> Can receive water from: ", this.connections.in);
     return this.connections.in.includes(direction);
   }
 
   getWaterOutputs(incomingDirection) {
-    console.log(this.connections.out.filter(direction => direction !== incomingDirection));
+    console.log(incomingDirection, " -> Output directions: ", this.connections.out.filter(direction => direction !== incomingDirection));
     return this.connections.out.filter(direction => direction !== incomingDirection);
   }
 
