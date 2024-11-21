@@ -11,12 +11,10 @@ export default class Piece {
   }
 
   canReceiveWaterFrom(direction) {
-    console.log(direction, " -> Can receive water from: ", this.connections.in);
     return this.connections.in.includes(direction);
   }
 
   getWaterOutputs(incomingDirection) {
-    console.log(incomingDirection, " -> Output directions: ", this.connections.out.filter(direction => direction !== incomingDirection));
     return this.connections.out.filter(direction => direction !== incomingDirection);
   }
 
@@ -25,8 +23,9 @@ export default class Piece {
       this.destroySprite();
     }
 
+    // Main sprite
     this.sprite = scene.add.image(x, y, this.type)
-      .setRotation(this.rotation * Math.PI / 180)
+        .setRotation(this.rotation * Math.PI / 180);
   }
 
   addWater(scene, x, y, waterTextureKey) {
@@ -55,9 +54,5 @@ export default class Piece {
       this.waterSprite.destroy();
       this.waterSprite = null;
     } 
-  }
-
-  getWetTextureKey() {
-    return `${this.type}Wet`;
   }
 }

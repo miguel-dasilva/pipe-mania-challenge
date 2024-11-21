@@ -1,15 +1,15 @@
 import Piece from './Piece';
-import { TILE_SIZE, GRID_ROWS, GRID_COLS } from '../config';
+import WaterFlowManager from '../managers/WaterFlowManager';
+import { TILE_SIZE, GRID_ROWS, GRID_COLS, BLOCKED_CELLS_MIN_PERCENTAGE, BLOCKED_CELLS_MAX_PERCENTAGE, WATER_FLOW_DELAY } from '../config';
 
 export default class Grid {
-  constructor(scene) {
+  constructor(scene, positionCalculator) {
     this.scene = scene;
     this.grid = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(null));
-    this.offsetX = TILE_SIZE * 2;
+    this.positionCalculator = positionCalculator;
     this.blockedCells = [];
     this.startCell = null;
-    this.waterIsFlowing = false;
-    this.onWaterFlowEnd = null;
+    this.waterManager = new WaterFlowManager(this, this.scene, this.positionCalculator);
 
     this.initializeBlockedCells();
     this.setStartCell();
@@ -17,7 +17,12 @@ export default class Grid {
 
   initializeBlockedCells() {
     const totalCells = GRID_ROWS * GRID_COLS;
-    const numBlockedCells = Math.floor(Math.random() * (totalCells * 0.15 - totalCells * 0.10) + totalCells * 0.10);
+    const numBlockedCells = Math.floor(
+      Math.random() * 
+      (totalCells * BLOCKED_CELLS_MAX_PERCENTAGE - 
+       totalCells * BLOCKED_CELLS_MIN_PERCENTAGE) +
+      totalCells * BLOCKED_CELLS_MIN_PERCENTAGE
+    );
 
     for (let i = 0; i < numBlockedCells; i++) {
       let row, col;
@@ -47,21 +52,18 @@ export default class Grid {
   createGrid() {
     for (let row = 0; row < GRID_ROWS; row++) {
       for (let col = 0; col < GRID_COLS; col++) {
-        const x = this.offsetX + col * TILE_SIZE;
-        const y = row * TILE_SIZE;
+        const position = this.positionCalculator.calculatePosition(row, col);
 
-        this.scene.add.rectangle(
-          x + TILE_SIZE / 2,
-          y + TILE_SIZE / 2,
-          TILE_SIZE,
-          TILE_SIZE,
-          this.isBlocked(row, col) ? 0x888888 : 0xcccccc
-        ).setStrokeStyle(2, 0x000000);
+        this.scene.add.image(
+          position.x,
+          position.y,
+          'backTile'
+        ).setTint(this.isBlocked(row, col) ? 0x666666 : 0xaaaaaa);
 
         if (this.startCell && row === this.startCell.row && col === this.startCell.col) {
           this.scene.add.circle(
-            x + TILE_SIZE / 2,
-            y + TILE_SIZE / 2,
+            position.x,
+            position.y,
             TILE_SIZE / 6,
             0x0000ff
           );
@@ -80,9 +82,8 @@ export default class Grid {
   }
 
   placePipe(row, col, piece) {
-    const x = this.offsetX + col * TILE_SIZE + TILE_SIZE / 2;
-    const y = row * TILE_SIZE + TILE_SIZE / 2;
-    piece.render(this.scene, x, y);
+    const position = this.positionCalculator.calculatePosition(row, col);
+    piece.render(this.scene, position.x, position.y);
     this.grid[row][col] = piece;
   }
 
@@ -91,55 +92,12 @@ export default class Grid {
   }
 
   startWaterFlow() {
-    console.log("Starting water flow");
-    const startPiece = this.grid[this.startCell.row][this.startCell.col];
-    if (startPiece) {
-      this.waterIsFlowing = true;
-      this.flowWater(this.startCell.row, this.startCell.col, 'top');
-    }
-  }
-
-  flowWater(row, col, incomingDirection) {
-    const piece = this.grid[row][col];
-    if (!piece || piece.isWet || !piece.canReceiveWaterFrom(incomingDirection)) {
-      console.log("fake game end")
-      return;
-    }
-
-    this.waterIsFlowing = true;
-    const x = this.offsetX + col * TILE_SIZE + TILE_SIZE / 2;
-    const y = row * TILE_SIZE + TILE_SIZE / 2;
-    piece.addWater(this.scene, x, y, 'water');
-
-    const outputs = piece.getWaterOutputs(incomingDirection);
-
-    setTimeout(() => {
-      let hasValidConnection = false;
-      outputs.forEach(direction => {
-        const nextCell = this.getNextCell(row, col, direction);
-        if (nextCell) {
-          const nextPiece = this.grid[nextCell.row][nextCell.col];
-          if (nextPiece && !nextPiece.isWet &&
-              nextPiece.canReceiveWaterFrom(this.getOppositeDirection(direction))) {
-            hasValidConnection = true;
-            this.flowWater(nextCell.row, nextCell.col, this.getOppositeDirection(direction));
-          }
-        }
-      });
-
-      if (!hasValidConnection) {
-        this.checkFlowComplete();
-      }
-    }, 500);
-  }
-
-  checkFlowComplete() {
-    this.waterIsFlowing = false;
-    setTimeout(() => {
-      if (!this.waterIsFlowing && this.onWaterFlowEnd) {
+    this.waterManager.onWaterFlowEnd = () => {
+      if (this.onWaterFlowEnd) {
         this.onWaterFlowEnd();
       }
-    }, 500);
+    };
+    this.waterManager.startFlow(this.startCell);
   }
 
   getWetPieces() {
@@ -152,23 +110,15 @@ export default class Grid {
     );
   }
 
-  getOppositeDirection(direction) {
-    const opposites = {
-      top: 'bottom',
-      bottom: 'top',
-      left: 'right',
-      right: 'left'
-    };
-
-    return opposites[direction];
+  getPieceAt(row, col) {
+    return this.grid[row][col];
   }
 
-  getNextCell(row, col, direction) {
-    switch (direction) {
-      case 'top': return row > 0 ? { row: row - 1, col } : null;
-      case 'bottom': return row < GRID_ROWS - 1 ? { row: row + 1, col } : null;
-      case 'left': return col > 0 ? { row, col: col - 1 } : null;
-      case 'right': return col < GRID_COLS - 1 ? { row, col: col + 1 } : null;
-    }
+  getDimensions() {
+    return { GRID_ROWS, GRID_COLS };
+  }
+
+  getAllPieces() {
+    return this.grid.flat().filter(piece => piece !== null);
   }
 }

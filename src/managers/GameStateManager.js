@@ -1,11 +1,12 @@
 import { TILE_SIZE, GRID_ROWS, GRID_COLS } from '../config';
 
 export default class GameStateManager {
-  constructor(scene, grid) {
+  constructor(scene, grid, positionCalculator) {
     this.scene = scene;
     this.grid = grid;
     this.gameEnded = false;
     this.minimumLength = this.generateMinimumLength();
+    this.positionCalculator = positionCalculator;
 
     this.grid.onWaterFlowEnd = () => this.checkWinCondition();
 
@@ -20,7 +21,7 @@ export default class GameStateManager {
 
   displayGoal() {
     this.scene.add.text(
-      TILE_SIZE * 8 + this.grid.offsetX,
+      TILE_SIZE * 8 + this.positionCalculator.offsetX,
       TILE_SIZE,
       `Goal: ${this.minimumLength}`,
       { 
@@ -31,21 +32,20 @@ export default class GameStateManager {
   }
 
   checkWinCondition() {
-    console.log("checkWinCondition");
-    console.log("gameEnded", this.gameEnded);
     if (this.gameEnded) return;
     this.gameEnded = true;
 
     const pathLength = this.calculatePathLength();
     const isWin = pathLength >= this.minimumLength;
-
     this.showGameOverUI(isWin, pathLength);
   }
 
   showGameOverUI(isWin, pathLength) {
+    const centerPosition = this.positionCalculator.calculateCenterPosition();
+
     const gameOverText = this.scene.add.text(
-      this.grid.offsetX + (GRID_COLS * TILE_SIZE) / 2,
-      GRID_ROWS * TILE_SIZE / 2,
+      centerPosition.x,
+      centerPosition.y,
       isWin ? 
         `You Win!\nPath Length: ${pathLength}` : 
         `Game Over\nPath Length: ${pathLength}/${this.minimumLength}`,
@@ -82,7 +82,6 @@ export default class GameStateManager {
   }
 
   calculatePathLength() {
-    console.log("calculatePathLength");
     let maxLength = 0;
     const visited = new Set();
     const wetPieces = this.grid.getWetPieces();
@@ -110,7 +109,7 @@ export default class GameStateManager {
         currentLength++;
 
         ['top', 'bottom', 'left', 'right'].forEach(direction => {
-            const nextCell = this.grid.getNextCell(row, col, direction);
+            const nextCell = this.grid.positionCalculator.getNextCell(row, col, direction);
             if (nextCell) {
                 countPath(nextCell.row, nextCell.col, currentLength);
             }
