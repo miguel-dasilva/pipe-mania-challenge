@@ -2,7 +2,7 @@ import Piece from './Piece';
 
 export default class PieceFactory {
   constructor() {
-    this.pipeKeys = ['straight', 'curved', 'cross', 'tee'];
+    this.pipeKeys = ['pipeStraight', 'pipeCurved', 'pipeCross', 'pipeTee'];
   }
 
   createRandomPiece() {

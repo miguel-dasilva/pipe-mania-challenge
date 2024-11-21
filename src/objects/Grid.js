@@ -1,5 +1,4 @@
-// src/objects/Grid.js
-import { TILE_SIZE, GRID_ROWS, GRID_COLS } from '../config';
+import { TILE_SIZE, GRID_ROWS, GRID_COLS, GRID_HEIGHT } from '../config';
 
 export default class Grid {
   constructor(scene) {
@@ -8,9 +7,16 @@ export default class Grid {
     this.offsetX = TILE_SIZE * 2;
     this.blockedCells = [];
     this.startCell = null;
+    this.minimumLength = this.generateMinimumLength();
 
     this.initializeBlockedCells();
     this.setStartCell();
+  }
+
+  generateMinimumLength() {
+    const baseLength = Math.floor((GRID_ROWS + GRID_COLS) / 2);
+    const variation = Math.floor(Math.random() * 3);
+    return baseLength + variation;
   }
 
   initializeBlockedCells() {
@@ -33,7 +39,7 @@ export default class Grid {
     do {
       row = Math.floor(Math.random() * (GRID_ROWS - 1));
       col = Math.floor(Math.random() * (GRID_COLS));
-    } while (this.isBlocked(row, col) || this.isBlocked(row + 1, col));
+    } while (this.isBlocked(row, col) || this.isBlocked(row + 1, col)); // Ensure start cell is not directly below a blocked cell
 
     this.startCell = { row, col };
   }
@@ -66,6 +72,16 @@ export default class Grid {
         }
       }
     }
+
+    this.scene.add.text(
+      TILE_SIZE * 8 + this.offsetX,
+      TILE_SIZE,
+      `Goal: ${this.minimumLength}`,
+      { 
+        fontSize: '24px',
+        fill: '#ffffff'
+      }
+    );
   }
 
   removePipe(row, col) {

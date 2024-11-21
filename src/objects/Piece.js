@@ -10,7 +10,7 @@ export default class Piece {
       this.destroySprite();
     }
 
-    this.sprite = scene.add.image(x, y, this.getTextureKey())
+    this.sprite = scene.add.image(x, y, this.type)
       .setRotation(this.rotation * Math.PI / 180)
   }
 
@@ -21,11 +21,7 @@ export default class Piece {
     }
   }
 
-  getTextureKey() {
-    return `pipe${this.type.charAt(0).toUpperCase() + this.type.slice(1)}`;
-  }
-
   getWetTextureKey() {
-    return `${this.getTextureKey()}Wet`;
+    return `${this.type}Wet`;
   }
 }
