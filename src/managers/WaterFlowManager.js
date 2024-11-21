@@ -21,7 +21,7 @@ export default class WaterFlowManager {
         if (!this.canFlowWater(row, col, incomingDirection)) return;
 
         this.waterIsFlowing = true;
-        this.addWaterToPiece(row, col);
+        this.addWaterToPiece(row, col, incomingDirection);
         this.scheduleWaterFlow(row, col, incomingDirection);
     }
 
@@ -33,11 +33,11 @@ export default class WaterFlowManager {
             piece.canReceiveWaterFrom(incomingDirection);
     }
 
-    addWaterToPiece(row, col) {
+    addWaterToPiece(row, col, incomingDirection) {
         const piece = this.grid.getPieceAt(row, col);
         const position = this.positionCalculator.calculatePosition(row, col);
 
-        piece.addWater(this.scene, position.x, position.y, 'water');
+        piece.addWater(this.scene, position.x, position.y, 'water', incomingDirection);
     }
 
     scheduleWaterFlow(row, col, incomingDirection) {

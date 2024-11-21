@@ -1,5 +1,5 @@
 import { PipeConnections } from "../types/PipeTypes";
-
+import WaterFlow from "./WaterFlow";
 export default class Piece {
   constructor(type, rotation = 0) {
     this.type = type;
@@ -28,19 +28,45 @@ export default class Piece {
         .setRotation(this.rotation * Math.PI / 180);
   }
 
-  addWater(scene, x, y, waterTextureKey) {
+  addWater(scene, x, y, waterTextureKey, incomingDirection = 'top') {
     if (!this.isWet) {
       this.isWet = true;
-      this.waterSprite = scene.add.image(x, y, waterTextureKey)
-        .setRotation(this.rotation * Math.PI / 180)
-        .setAlpha(0);
 
-      scene.tweens.add({
-        targets: this.waterSprite,
-        alpha: 1,
-        duration: 300,
-        ease: 'Linear'
+      if (!this.waterFlow) {
+        this.waterFlow = new WaterFlow(scene, x, y);
+      }
+
+      const offset = 32;
+      const startPos = this.getPositionFromDirection(incomingDirection, offset);
+      const centerPos = { x, y };
+
+      this.waterFlow.createWaterFlow(
+        { x: x + startPos.x, y: y + startPos.y },
+        centerPos
+      );
+
+      const outputs = this.getWaterOutputs(incomingDirection);
+      outputs.forEach(direction => {
+        const endPos = this.getPositionFromDirection(direction, offset);
+        
+        scene.time.delayedCall(200, () => {
+          this.waterFlow.createWaterFlow(
+            centerPos,
+            { x: x + endPos.x, y: y + endPos.y }
+          );
+        });
       });
+    }
+
+  }
+
+  getPositionFromDirection(direction, offset) {
+    switch (direction) {
+      case 'top': return { x: 0, y: -offset };
+      case 'bottom': return { x: 0, y: offset };
+      case 'left': return { x: -offset, y: 0 };
+      case 'right': return { x: offset, y: 0 };
+      default: return { x: 0, y: 0 };
     }
   }
 
