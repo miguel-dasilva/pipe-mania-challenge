@@ -33,7 +33,6 @@ export default class Queue {
   }
 
   renderQueue() {
-    console.log('renderQueue');
     this.queue.forEach(piece => piece.destroySprite());
 
     this.queue.forEach((piece, index) => {

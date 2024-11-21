@@ -14,6 +14,8 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('pipeStraight', 'assets/pipeGrey_03.png');
     this.load.image('pipeCross', 'assets/pipeGrey_06.png');
     this.load.image('pipeTee', 'assets/pipeGrey_05.png');
+
+    this.load.image('water', 'assets/waterTexture.png');
   }
 
   create() {
@@ -26,6 +28,10 @@ export default class GameScene extends Phaser.Scene {
 
     // Handle Inputs
     this.input.on('pointerdown', (pointer) => this.handleGridClick(pointer));
+
+    this.time.delayedCall(5000, () => {
+      this.grid.startWaterFlow();
+    });
   }
 
   handleGridClick(pointer) {

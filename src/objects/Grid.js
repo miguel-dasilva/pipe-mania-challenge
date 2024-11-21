@@ -1,4 +1,5 @@
-import { TILE_SIZE, GRID_ROWS, GRID_COLS, GRID_HEIGHT } from '../config';
+import Piece from './Piece';
+import { TILE_SIZE, GRID_ROWS, GRID_COLS } from '../config';
 
 export default class Grid {
   constructor(scene) {
@@ -69,6 +70,10 @@ export default class Grid {
             TILE_SIZE / 6,
             0x0000ff
           );
+
+          const startPiece = new Piece('pipeStraight', 0);
+          this.placePipe(row, col, startPiece);
+          this.grid[row][col] = startPiece;
         }
       }
     }
@@ -98,5 +103,55 @@ export default class Grid {
 
   isEmpty(row, col) {
     return !this.grid[row][col];
+  }
+
+  startWaterFlow() {
+    console.log("Starting water flow");
+    const startPiece = this.grid[this.startCell.row][this.startCell.col];
+    if (startPiece) {
+      this.flowWater(this.startCell.row, this.startCell.col, 'top');
+    }
+  }
+
+  flowWater(row, col, incomingDirection) {
+    console.log("Flow water", row, col, incomingDirection);
+    const piece = this.grid[row][col];
+    if (!piece || piece.isWet || !piece.canReceiveWaterFrom(incomingDirection)) {
+      return;
+    }
+
+    const x = this.offsetX + col * TILE_SIZE + TILE_SIZE / 2;
+    const y = row * TILE_SIZE + TILE_SIZE / 2;
+    piece.addWater(this.scene, x, y, 'water');
+
+    const outputs = piece.getWaterOutputs(incomingDirection);
+    setTimeout(() => {
+      outputs.forEach(direction => {
+        const nextCell = this.getNextCell(row, col, direction);
+        if (nextCell) {
+          this.flowWater(nextCell.row, nextCell.col, this.getOppositeDirection(direction));
+        }
+      });
+    }, 500);
+  }
+
+  getNextCell(row, col, direction) {
+    switch (direction) {
+      case 'top': return row > 0 ? { row: row - 1, col } : null;
+      case 'bottom': return row < GRID_ROWS - 1 ? { row: row + 1, col } : null;
+      case 'left': return col > 0 ? { row, col: col - 1 } : null;
+      case 'right': return col < GRID_COLS - 1 ? { row, col: col + 1 } : null;
+    }
+  }
+
+  getOppositeDirection(direction) {
+    const opposites = {
+      top: 'bottom',
+      bottom: 'top',
+      left: 'right',
+      right: 'left'
+    };
+
+    return opposites[direction];
   }
 }
