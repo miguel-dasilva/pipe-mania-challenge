@@ -1,6 +1,7 @@
 // src/scenes/GameScene.js
 import Phaser from 'phaser';
 import Grid from '../objects/Grid';
+import Queue from '../objects/Queue';
 import { TILE_SIZE, GRID_ROWS, GRID_COLS } from '../config';
 
 export default class GameScene extends Phaser.Scene {
@@ -20,16 +21,29 @@ export default class GameScene extends Phaser.Scene {
     this.grid = new Grid(this);
     this.grid.createGrid();
 
-    // Handle click events
+    // Initialize the queue
+    this.queue = new Queue(this, TILE_SIZE, TILE_SIZE);
+
+    // Handle Inputs
     this.input.on('pointerdown', (pointer) => this.handleGridClick(pointer));
   }
 
   handleGridClick(pointer) {
-    const col = Math.floor(pointer.x / TILE_SIZE);
+    const col = Math.floor((pointer.x - this.grid.offsetX) / TILE_SIZE);
     const row = Math.floor(pointer.y / TILE_SIZE);
 
     if (row >= 0 && row < GRID_ROWS && col >= 0 && col < GRID_COLS) {
-      this.grid.placePipe(row, col, 'pipe');  // Place a pipe on the clicked grid position
+      if (!this.grid.isBlocked(row, col)) {
+        if (!this.grid.isEmpty(row, col)) {
+          this.grid.removePipe(row, col);
+        }
+
+        const piece = this.queue.dequeue();
+        if (piece) {
+          this.grid.placePipe(row, col, piece);
+          this.queue.enqueue();
+        }
+      }
     }
   }
 }
