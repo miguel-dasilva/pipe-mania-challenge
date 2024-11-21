@@ -8,18 +8,11 @@ export default class Grid {
     this.offsetX = TILE_SIZE * 2;
     this.blockedCells = [];
     this.startCell = null;
-    this.minimumLength = this.generateMinimumLength();
     this.waterIsFlowing = false;
-    this.gameEnded = false;
+    this.onWaterFlowEnd = null;
 
     this.initializeBlockedCells();
     this.setStartCell();
-  }
-
-  generateMinimumLength() {
-    const baseLength = Math.floor((GRID_ROWS + GRID_COLS) / 2);
-    const variation = Math.floor(Math.random() * 3);
-    return baseLength + variation;
   }
 
   initializeBlockedCells() {
@@ -79,16 +72,6 @@ export default class Grid {
         }
       }
     }
-
-    this.scene.add.text(
-      TILE_SIZE * 8 + this.offsetX,
-      TILE_SIZE,
-      `Goal: ${this.minimumLength}`,
-      { 
-        fontSize: '24px',
-        fill: '#ffffff'
-      }
-    );
   }
 
   removePipe(row, col) {
@@ -117,14 +100,13 @@ export default class Grid {
   }
 
   flowWater(row, col, incomingDirection) {
-    if (this.gameEnded) return;
-
     const piece = this.grid[row][col];
     if (!piece || piece.isWet || !piece.canReceiveWaterFrom(incomingDirection)) {
       console.log("fake game end")
       return;
     }
 
+    this.waterIsFlowing = true;
     const x = this.offsetX + col * TILE_SIZE + TILE_SIZE / 2;
     const y = row * TILE_SIZE + TILE_SIZE / 2;
     piece.addWater(this.scene, x, y, 'water');
@@ -146,61 +128,28 @@ export default class Grid {
       });
 
       if (!hasValidConnection) {
-        console.log("true flow end");
-        this.checkWinCondition();
+        this.checkFlowComplete();
       }
     }, 500);
   }
 
-  checkWinCondition() {
-    if (this.gameEnded) return;
-    this.gameEnded = true;
-
-    const pathLength = this.calculatePathLength();
-    const isWin = pathLength >= this.minimumLength;
-
-    const gameOverText = this.scene.add.text(
-      this.offsetX + (GRID_COLS * TILE_SIZE) / 2,
-      GRID_ROWS * TILE_SIZE / 2,
-      isWin ? 
-        `You Win!\nPath Length: ${pathLength}` : 
-        `Game Over\nPath Length: ${pathLength}/${this.minimumLength}`,
-      {
-        fontSize: '32px',
-        fill: isWin ? '#00ff00' : '#ff0000',
-        backgroundColor: '#000000',
-        padding: { x: 20, y: 10 },
-        align: 'center'
+  checkFlowComplete() {
+    this.waterIsFlowing = false;
+    setTimeout(() => {
+      if (!this.waterIsFlowing && this.onWaterFlowEnd) {
+        this.onWaterFlowEnd();
       }
-    ).setOrigin(0.5);
-  
-    // Add restart button
-    const restartButton = this.scene.add.text(
-      gameOverText.x,
-      gameOverText.y + 80,
-      'Restart',
-      {
-        fontSize: '24px',
-        fill: '#ffffff',
-        backgroundColor: '#444444',
-        padding: { x: 20, y: 10 }
-      }
-    )
-    .setOrigin(0.5)
-    .setInteractive();
-  
-    restartButton.on('pointerdown', () => {
-      this.scene.scene.restart();
-    });      
+    }, 500);
   }
 
-  getNextCell(row, col, direction) {
-    switch (direction) {
-      case 'top': return row > 0 ? { row: row - 1, col } : null;
-      case 'bottom': return row < GRID_ROWS - 1 ? { row: row + 1, col } : null;
-      case 'left': return col > 0 ? { row, col: col - 1 } : null;
-      case 'right': return col < GRID_COLS - 1 ? { row, col: col + 1 } : null;
-    }
+  getWetPieces() {
+    return this.grid.flatMap((row, rowIndex) => 
+      row.map((piece, colIndex) => ({
+        row: rowIndex,
+        col: colIndex,
+        piece
+      })).filter(({piece}) => piece && piece.isWet)
+    );
   }
 
   getOppositeDirection(direction) {
@@ -214,31 +163,12 @@ export default class Grid {
     return opposites[direction];
   }
 
-  calculatePathLength() {
-    let maxLength = 0;
-    const visited = new Set();
-
-    const countPath = (row, col, currentLength = 0) => {
-      const key = `${row},${col}`;
-      if (visited.has(key) || !this.grid[row][col] || !this.grid[row][col].isWet) {
-        maxLength = Math.max(maxLength, currentLength);
-        return;
-      }
-
-      visited.add(key);
-      currentLength++;
-
-      ['top', 'bottom', 'left', 'right'].forEach(direction => {
-        const nextCell = this.getNextCell(row, col, direction);
-        if (nextCell) {
-          countPath(nextCell.row, nextCell.col, currentLength);
-        }
-      });
-
-      visited.delete(key);
+  getNextCell(row, col, direction) {
+    switch (direction) {
+      case 'top': return row > 0 ? { row: row - 1, col } : null;
+      case 'bottom': return row < GRID_ROWS - 1 ? { row: row + 1, col } : null;
+      case 'left': return col > 0 ? { row, col: col - 1 } : null;
+      case 'right': return col < GRID_COLS - 1 ? { row, col: col + 1 } : null;
     }
-
-    countPath(this.startCell.row, this.startCell.col);
-    return maxLength;
   }
 }

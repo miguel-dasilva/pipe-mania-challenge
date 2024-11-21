@@ -1,4 +1,4 @@
-import { PipeConnections } from "./PipeTypes";
+import { PipeConnections } from "../types/PipeTypes";
 
 export default class Piece {
   constructor(type, rotation = 0) {

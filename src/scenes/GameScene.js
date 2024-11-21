@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import Grid from '../objects/Grid';
 import Queue from '../objects/Queue';
+import GameStateManager from '../managers/GameStateManager';
 import { TILE_SIZE, GRID_ROWS, GRID_COLS } from '../config';
 
 export default class GameScene extends Phaser.Scene {
@@ -21,6 +22,8 @@ export default class GameScene extends Phaser.Scene {
   create() {
     // Initialize the grid
     this.grid = new Grid(this);
+    this.gameState = new GameStateManager(this, this.grid);
+
     this.grid.createGrid();
 
     // Initialize the queue
