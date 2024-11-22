@@ -1,4 +1,7 @@
 export const PipeConnections = {
+    pipeStart: {
+        0: { in: ['top'], out: ['bottom'] }
+    },
     pipeStraight: {
         0: { in: ['bottom', 'top'], out: ['top', 'bottom'] }, 
         90: { in: ['right', 'left'], out: ['left', 'right'] }, 

@@ -68,7 +68,7 @@ export default class Grid {
             0x0000ff
           );
 
-          const startPiece = new Piece('pipeStraight', 0);
+          const startPiece = new Piece('pipeStart', 0);
           this.placePipe(row, col, startPiece);
           this.grid[row][col] = startPiece;
         }
@@ -77,13 +77,33 @@ export default class Grid {
   }
 
   removePipe(row, col) {
-    this.grid[row][col].destroySprite();
+    const piece = this.grid[row][col];
+
+    this.scene.tweens.add({
+      targets: piece.sprite,
+      scale: 0.8,
+      alpha: 0,
+      duration: 200,
+      ease: 'Back.easeIn',
+    });
+
+    piece.destroySprite();
     this.grid[row][col] = null;
   }
 
   placePipe(row, col, piece) {
     const position = this.positionCalculator.calculatePosition(row, col);
     piece.render(this.scene, position.x, position.y);
+    piece.sprite.setScale(1.2).setAlpha(0);
+
+    this.scene.tweens.add({
+      targets: piece.sprite,
+      scale: 1,
+      alpha: 1,
+      duration: 200,
+      ease: 'Back.easeOut',
+    });
+
     this.grid[row][col] = piece;
   }
 

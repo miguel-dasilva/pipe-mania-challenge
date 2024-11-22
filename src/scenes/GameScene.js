@@ -13,6 +13,8 @@ export default class GameScene extends Phaser.Scene {
 
   preload() {
     this.load.image('background', 'assets/platformIndustrial_094.png');
+    
+    this.load.image('pipeStart', 'assets/pipeGrey_02.png');
     this.load.image('pipeCurved', 'assets/pipeGrey_01.png');
     this.load.image('pipeStraight', 'assets/pipeGrey_03.png');
     this.load.image('pipeCross', 'assets/pipeGrey_06.png');
