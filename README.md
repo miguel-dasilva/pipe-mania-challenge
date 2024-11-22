@@ -6,8 +6,6 @@ A browser-based puzzle game inspired by the classic Pipe Mania (also known as Pi
 
 Connect pipes to create the longest possible path for water to flow through. The water starts flowing from a designated starting point after a short time delay. The goal is to create a path that meets or exceeds the minimum length requirement before the water reaches a dead end.
 
-## 🚀 Getting Started
-
 ## 🛠 Tech Stack
 - Node.js `v23.2.0`
 - npm `v10.2.3`
