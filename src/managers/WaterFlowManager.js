@@ -1,4 +1,4 @@
-import { WATER_FLOW_DELAY, WATER_FLOW_SPEED } from '../config';
+import { WATER_FLOW_DELAY } from '../config';
 
 export default class WaterFlowManager {
     constructor(grid, scene, positionCalculator) {

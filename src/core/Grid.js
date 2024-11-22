@@ -76,6 +76,11 @@ export default class Grid {
     }
   }
 
+  canRemovePipe(row, col) {
+    return !this.grid[row][col].isWet && 
+           !(this.startCell.row === row && this.startCell.col === col);
+  }
+
   removePipe(row, col) {
     const piece = this.grid[row][col];
 

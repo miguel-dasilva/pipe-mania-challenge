@@ -1,14 +1,16 @@
 // src/scenes/GameScene.js
 import Phaser from 'phaser';
-import Grid from '../objects/Grid';
-import Queue from '../objects/Queue';
+import Grid from '../core/Grid';
 import GameStateManager from '../managers/GameStateManager';
 import PositionCalculator from '../utils/PositionCalculator';
-import { TILE_SIZE } from '../config';
+import PlayingState from '../states/PlayingState';
+import GameOverState from '../states/GameOverState';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: 'GameScene' });
+    this.currentState = null;
+    this.positionCalculator = PositionCalculator.getInstance();
   }
 
   preload() {
@@ -29,41 +31,30 @@ export default class GameScene extends Phaser.Scene {
     const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
     background.setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);
 
-    const positionCalculator = PositionCalculator.getInstance();
-
     // Initialize the grid and game state manager
-    this.grid = new Grid(this, positionCalculator);
-    this.gameState = new GameStateManager(this, this.grid, positionCalculator);
+    this.grid = new Grid(this, this.positionCalculator);
+    this.gameState = new GameStateManager(this, this.grid, this.positionCalculator);
 
-    this.grid.createGrid();
-
-    // Initialize the queue
-    this.queue = new Queue(this, TILE_SIZE, TILE_SIZE);
+    this.setState(new PlayingState(this));
 
     // Handle Inputs
-    this.input.on('pointerdown', (pointer) => this.handleGridClick(pointer));
+    this.input.on('pointerdown', (pointer) => this.currentState.handleInput(pointer));
 
     this.time.delayedCall(5000, () => {
       this.grid.startWaterFlow();
     });
   }
 
-  handleGridClick(pointer) {
-    if (this.gameState.gameEnded) return;
-    const gridPos = this.grid.positionCalculator.screenToGrid(pointer.x, pointer.y);
-    
-    if (this.grid.positionCalculator.isValidGridPosition(gridPos.row, gridPos.col)) {
-      if (!this.grid.isBlocked(gridPos.row, gridPos.col)) {
-        if (!this.grid.isEmpty(gridPos.row, gridPos.col)) {
-          this.grid.removePipe(gridPos.row, gridPos.col);
-        }
-
-        const piece = this.queue.dequeue();
-        if (piece) {
-          this.grid.placePipe(gridPos.row, gridPos.col, piece);
-          this.queue.enqueue();
-        }
-      }
+  setState(newState) {
+    if (this.currentState) {
+      this.currentState.exit();
     }
+
+    this.currentState = newState;
+    this.currentState.enter();
+  }
+
+  gameOver(isWin, pathLength, minimumLength) {
+    this.setState(new GameOverState(this, isWin, pathLength, minimumLength));
   }
 }

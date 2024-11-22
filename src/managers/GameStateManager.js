@@ -37,48 +37,8 @@ export default class GameStateManager {
 
     const pathLength = this.calculatePathLength();
     const isWin = pathLength >= this.minimumLength;
-    this.showGameOverUI(isWin, pathLength);
-  }
 
-  showGameOverUI(isWin, pathLength) {
-    const centerPosition = this.positionCalculator.calculateCenterPosition();
-
-    const gameOverText = this.scene.add.text(
-      centerPosition.x,
-      centerPosition.y,
-      isWin ? 
-        `You Win!\nPath Length: ${pathLength}` : 
-        `Game Over\nPath Length: ${pathLength}/${this.minimumLength}`,
-      {
-        fontSize: '32px',
-        fill: isWin ? '#00ff00' : '#ff0000',
-        backgroundColor: '#000000',
-        padding: { x: 20, y: 10 },
-        align: 'center'
-      }
-    ).setOrigin(0.5);
-
-    this.addRestartButton(gameOverText);
-  }
-
-  addRestartButton(gameOverText) {
-    const restartButton = this.scene.add.text(
-      gameOverText.x,
-      gameOverText.y + 80,
-      'Restart',
-      {
-        fontSize: '24px',
-        fill: '#ffffff',
-        backgroundColor: '#444444',
-        padding: { x: 20, y: 10 }
-      }
-    )
-    .setOrigin(0.5)
-    .setInteractive();
-
-    restartButton.on('pointerdown', () => {
-      this.scene.scene.restart();
-    });
+    this.scene.gameOver(isWin, pathLength, this.minimumLength);
   }
 
   calculatePathLength() {
