@@ -76,6 +76,18 @@ export default class Grid {
     }
   }
 
+  recreateGrid() {
+    this.grid.forEach(row => {
+      row.forEach(piece => {
+        if (piece) {
+          piece.destroySprite();
+        }
+      });
+    });
+
+    this.createGrid();
+  }
+
   canRemovePipe(row, col) {
     return !this.grid[row][col].isWet && 
            !(this.startCell.row === row && this.startCell.col === col);

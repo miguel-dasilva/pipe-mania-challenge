@@ -28,6 +28,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.scale.on('resize', this.handleResize, this);
+
     const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
     background.setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);
 
@@ -43,6 +45,13 @@ export default class GameScene extends Phaser.Scene {
     this.time.delayedCall(5000, () => {
       this.grid.startWaterFlow();
     });
+  }
+
+  handleResize(gameSize) {
+    this.positionCalculator.updateScale();
+    if (this.grid) {
+      this.grid.recreateGrid();
+    }
   }
 
   setState(newState) {

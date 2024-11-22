@@ -1,5 +1,5 @@
 import { PipeConnections } from "../types/PipeTypes";
-import WaterFlow from "./WaterFlow";
+import WaterFlow from "../animations/WaterFlow";
 export default class Piece {
   constructor(type, rotation = 0) {
     this.type = type;

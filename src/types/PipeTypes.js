@@ -14,7 +14,7 @@ export const PipeConnections = {
         180: { in: ['top', 'left'], out: ['left', 'top'] },
         270: { in: ['top', 'right'], out: ['right', 'top'] }
     },
-    pipeCross: { //this can be simplified because all directions are the same
+    pipeCross: {
         0: { in: ['top', 'right', 'bottom', 'left'], out: ['top', 'right', 'bottom', 'left'] },
         90: { in: ['top', 'right', 'bottom', 'left'], out: ['top', 'right', 'bottom', 'left'] },
         180: { in: ['top', 'right', 'bottom', 'left'], out: ['top', 'right', 'bottom', 'left'] },

@@ -20,9 +20,12 @@ export default class GameStateManager {
   }
 
   displayGoal() {
+    const x = this.positionCalculator.offsetX + (GRID_COLS * TILE_SIZE * this.positionCalculator.scale) + TILE_SIZE;
+    const y = this.positionCalculator.offsetY / 2;
+    
     this.scene.add.text(
-      TILE_SIZE * 8 + this.positionCalculator.offsetX,
-      TILE_SIZE,
+      x,
+      y,
       `Goal: ${this.minimumLength}`,
       { 
         fontSize: '24px',

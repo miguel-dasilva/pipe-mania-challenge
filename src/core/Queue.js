@@ -7,7 +7,7 @@ export default class Queue {
     this.x = x;
     this.y = y;
     this.queue = [];
-    this.cellSize = TILE_SIZE;
+    this.cellSize = TILE_SIZE * scene.positionCalculator.scale;
     this.pieceFactory = new PieceFactory();
     for (let i = 0; i < startingSize; i++) {
         this.queue.push(this.pieceFactory.createRandomPiece());
