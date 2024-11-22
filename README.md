@@ -16,7 +16,7 @@ Connect pipes to create the longest possible path for water to flow through. The
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/pipe-mania-challenge.git
+git clone https://github.com/miguel-dasilva/pipe-mania-challenge.git
 ```
 
 2. Install dependencies:
