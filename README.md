@@ -1,6 +1,6 @@
 # Pipe Mania Challenge
 
-A browser-based puzzle game inspired by the classic Pipe Mania (also known as Pipe Dream). Built with Phaser 3 and modern JavaScript.
+A browser-based puzzle game inspired by the classic Pipe Mania (also known as Pipe Dream). Built with Phaser 3 and JavaScript.
 
 ## 🎮 Game Description
 
@@ -47,17 +47,18 @@ The built files will be in the `dist` directory, ready for deployment.
 ## 🎯 How to Play
 
 1. Click on empty grid spaces to place pipes
-2. Create a continuous path from the starting point (blue dot)
+2. Create a continuous path from the starting pipe
 3. Connect pipes to reach the required path length
 4. Water will start flowing after a few seconds
 5. You win if the water can flow through a path that meets or exceeds the minimum length
 6. You can substitute pipes that haven't been filled with water by clicking on them
-
+7. Darker tiles are blocked
 
 ## 📁 Project Structure
 
 - `src/` - Source code
-  - `core/` - Core game mechanics (Grid, Piece, Queue, WaterFlow)
+  - `core/` - Core game mechanics (Grid, Piece, Queue, PieceFactory)
+  - `animations/` - Complex animations
   - `managers/` - Game state and water flow management
   - `scenes/` - Phaser scenes
   - `states/` - Game state implementations
@@ -78,8 +79,8 @@ The built files will be in the `dist` directory, ready for deployment.
 **Responsibility**: Represents individual pipe pieces
 - Stores pipe type and rotation
 - Manages pipe connections and water flow directions
-- Handles sprite rendering and water effects
-- Tracks wet/dry state
+- Handles sprite rendering and basic effects
+- Tracks wet/dry piece state
 
 #### 3. PieceFactory (`PieceFactory.js`)
 **Responsibility**: Encapsulate Piece randomization logic
@@ -94,7 +95,7 @@ The built files will be in the `dist` directory, ready for deployment.
 ### Managers/
 #### 1. GameStateManager (`GameStateManager.js`)
 **Responsibility**: Manages overall game state and transitions
-- Tracks current state
+- Tracks current game state
 - Handles state-specific logic
 - Manages scene changes
 

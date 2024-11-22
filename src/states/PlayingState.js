@@ -6,6 +6,7 @@ export default class PlayingState extends GameState {
   enter() {
     this.game.grid.createGrid();
     this.game.queue = new Queue(this.game, TILE_SIZE, TILE_SIZE);
+    this.game.gameManager.startWaterFlowCountdown();
   }
 
   handleInput(pointer) {

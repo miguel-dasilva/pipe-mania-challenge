@@ -1,16 +1,25 @@
-import { TILE_SIZE, GRID_ROWS, GRID_COLS } from '../config';
+import { TILE_SIZE, GRID_ROWS, GRID_COLS, WATER_FLOW_COUNTDOWN } from '../config';
 
-export default class GameStateManager {
+export default class GameManager {
   constructor(scene, grid, positionCalculator) {
     this.scene = scene;
     this.grid = grid;
     this.gameEnded = false;
     this.minimumLength = this.generateMinimumLength();
     this.positionCalculator = positionCalculator;
+    this.countdownTime = Math.floor(WATER_FLOW_COUNTDOWN / 1000);
+    this.countdownText = null;
 
     this.grid.onWaterFlowEnd = () => this.checkWinCondition();
 
     this.displayGoal();
+  }
+
+  startWaterFlowCountdown() {
+    this.displayWaterCountdown();
+    this.scene.time.delayedCall(WATER_FLOW_COUNTDOWN, () => {
+      this.grid.startWaterFlow();
+    });
   }
 
   generateMinimumLength() {
@@ -34,9 +43,57 @@ export default class GameStateManager {
     );
   }
 
+  displayWaterCountdown() {
+    const x = this.positionCalculator.offsetX + (GRID_COLS * TILE_SIZE * this.positionCalculator.scale) + TILE_SIZE;
+    const y = this.positionCalculator.offsetY / 2 + 40;
+
+    this.countdownText = this.scene.add.text(
+      x,
+      y,
+      `⏱ ${this.countdownTime}`,
+      {
+          fontSize: '24px',
+          fill: '#ffffff',
+          padding: { x: 10, y: 5 },
+          fixedWidth: 80,
+          align: 'center'
+      }
+    );
+
+    this.scene.time.addEvent({
+      delay: 1000,
+      callback: this.updateCountdown,
+      callbackScope: this,
+      repeat: this.countdownTime - 1
+    });
+  }
+
+  updateCountdown() {
+    this.countdownTime--;
+    
+    if (this.countdownTime >= 0) {
+        this.countdownText.setText(`⏱ ${this.countdownTime}`);
+
+        if (this.countdownTime === 0) {
+          this.scene.tweens.add({
+            targets: this.countdownText,
+            alpha: 0,
+            duration: 400,
+            ease: 'Power2',
+            yoyo: true,
+            repeat: -1,
+        });
+      }
+    }
+  }
+
   checkWinCondition() {
     if (this.gameEnded) return;
     this.gameEnded = true;
+
+    if (this.countdownText) {
+      this.countdownText.destroy();
+    }
 
     const pathLength = this.calculatePathLength();
     const isWin = pathLength >= this.minimumLength;

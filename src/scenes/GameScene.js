@@ -1,7 +1,7 @@
 // src/scenes/GameScene.js
 import Phaser from 'phaser';
 import Grid from '../core/Grid';
-import GameStateManager from '../managers/GameStateManager';
+import GameManager from '../managers/GameManager';
 import PositionCalculator from '../utils/PositionCalculator';
 import PlayingState from '../states/PlayingState';
 import GameOverState from '../states/GameOverState';
@@ -35,16 +35,12 @@ export default class GameScene extends Phaser.Scene {
 
     // Initialize the grid and game state manager
     this.grid = new Grid(this, this.positionCalculator);
-    this.gameState = new GameStateManager(this, this.grid, this.positionCalculator);
+    this.gameManager = new GameManager(this, this.grid, this.positionCalculator);
 
     this.setState(new PlayingState(this));
 
     // Handle Inputs
     this.input.on('pointerdown', (pointer) => this.currentState.handleInput(pointer));
-
-    this.time.delayedCall(5000, () => {
-      this.grid.startWaterFlow();
-    });
   }
 
   handleResize(gameSize) {
